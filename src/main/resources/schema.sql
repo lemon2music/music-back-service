@@ -4,8 +4,10 @@ CREATE TABLE IF NOT EXISTS app_user (
     password_hash VARCHAR(128) NOT NULL,
     membership_level VARCHAR(32) NOT NULL,
     status VARCHAR(32) NOT NULL,
+    phone VARCHAR(20) NULL,
     created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT uk_app_user_phone UNIQUE (phone)
 );
 
 CREATE TABLE IF NOT EXISTS app_role (

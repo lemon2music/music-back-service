@@ -37,12 +37,20 @@ public class UserService {
             throw new BusinessException("username already exists");
         }
 
+        if (request.phone() != null) {
+            UserEntity phoneOwner = userMapper.findByPhone(request.phone());
+            if (phoneOwner != null) {
+                throw new BusinessException("phone already exists");
+            }
+        }
+
         LocalDateTime now = LocalDateTime.now();
         UserEntity entity = new UserEntity();
         entity.setUsername(request.username());
         entity.setPasswordHash(passwordEncoder.encode(request.password()));
         entity.setMembershipLevel(MembershipLevel.NORMAL);
         entity.setStatus(UserStatus.ACTIVE);
+        entity.setPhone(request.phone());
         entity.setCreatedAt(now);
         entity.setUpdatedAt(now);
         userMapper.insert(entity);

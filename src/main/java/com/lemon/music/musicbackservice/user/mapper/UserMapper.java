@@ -15,17 +15,20 @@ import java.time.LocalDateTime;
 public interface UserMapper {
 
     @Insert("""
-            INSERT INTO app_user(username, password_hash, membership_level, status, created_at, updated_at)
-            VALUES(#{username}, #{passwordHash}, #{membershipLevel}, #{status}, #{createdAt}, #{updatedAt})
+            INSERT INTO app_user(username, password_hash, membership_level, status, phone, created_at, updated_at)
+            VALUES(#{username}, #{passwordHash}, #{membershipLevel}, #{status}, #{phone}, #{createdAt}, #{updatedAt})
             """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     int insert(UserEntity user);
 
-    @Select("SELECT id, username, password_hash, membership_level, status, created_at, updated_at FROM app_user WHERE username = #{username} LIMIT 1")
+    @Select("SELECT id, username, password_hash, membership_level, status, phone, created_at, updated_at FROM app_user WHERE username = #{username} LIMIT 1")
     UserEntity findByUsername(@Param("username") String username);
 
-    @Select("SELECT id, username, password_hash, membership_level, status, created_at, updated_at FROM app_user WHERE id = #{id} LIMIT 1")
+    @Select("SELECT id, username, password_hash, membership_level, status, phone, created_at, updated_at FROM app_user WHERE id = #{id} LIMIT 1")
     UserEntity findById(@Param("id") Long id);
+
+    @Select("SELECT id, username, password_hash, membership_level, status, phone, created_at, updated_at FROM app_user WHERE phone = #{phone} LIMIT 1")
+    UserEntity findByPhone(@Param("phone") String phone);
 
     @Update("UPDATE app_user SET status = 'DEACTIVATED', updated_at = #{updatedAt} WHERE id = #{id}")
     int deactivateById(@Param("id") Long id, @Param("updatedAt") LocalDateTime updatedAt);

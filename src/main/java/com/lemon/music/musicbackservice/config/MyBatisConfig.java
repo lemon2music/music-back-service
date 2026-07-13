@@ -17,6 +17,12 @@ public class MyBatisConfig {
     public SqlSessionFactory sqlSessionFactory(DataSource dataSource) throws Exception {
         SqlSessionFactoryBean factoryBean = new SqlSessionFactoryBean();
         factoryBean.setDataSource(dataSource);
+
+        // 显式配置 MyBatis 以启用下划线到驼峰的映射
+        org.apache.ibatis.session.Configuration mybatisConfig = new org.apache.ibatis.session.Configuration();
+        mybatisConfig.setMapUnderscoreToCamelCase(true);
+        factoryBean.setConfiguration(mybatisConfig);
+
         return factoryBean.getObject();
     }
 

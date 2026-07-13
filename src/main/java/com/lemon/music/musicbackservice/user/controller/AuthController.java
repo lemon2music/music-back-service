@@ -6,7 +6,9 @@ import com.lemon.music.musicbackservice.auth.RequirePermission;
 import com.lemon.music.musicbackservice.common.ApiResponse;
 import com.lemon.music.musicbackservice.user.dto.LoginRequest;
 import com.lemon.music.musicbackservice.user.dto.LoginResponse;
+import com.lemon.music.musicbackservice.user.domain.UserEntity;
 import com.lemon.music.musicbackservice.user.dto.SimpleUserResponse;
+import com.lemon.music.musicbackservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -23,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
     private final AuthService authService;
+    private final UserService userService;
 
     @PostMapping("/login")
     public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -41,7 +44,8 @@ public class AuthController {
     @RequirePermission("USER_SELF")
     public ApiResponse<SimpleUserResponse> me() {
         var session = AuthContext.get();
-        return ApiResponse.ok(new SimpleUserResponse(session.userId(), session.username(), null));
+        UserEntity user = userService.requireActiveUser(session.userId());
+        return ApiResponse.ok(new SimpleUserResponse(session.userId(), session.username(), user.getMembershipLevel(), user.getPhone()));
     }
 
     private String extractToken(String authorization) {
