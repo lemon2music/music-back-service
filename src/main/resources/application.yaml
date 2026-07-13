@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: music-back-service
+  datasource:
+    url: jdbc:mysql://47.119.121.254:3306/lemondb_dev?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    username: admin
+    password: Test@123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  data:
+    redis:
+      host: 47.119.121.254
+      port: 6379
+      database: 0
+  sql:
+    init:
+      mode: always
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+app:
+  auth:
+    token-expire-hours: 168
