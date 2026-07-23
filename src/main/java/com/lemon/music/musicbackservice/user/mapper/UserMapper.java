@@ -31,4 +31,11 @@ public interface UserMapper {
 
     @Update("UPDATE app_user SET status = 'DEACTIVATED', updated_at = #{updatedAt} WHERE id = #{id}")
     int deactivateById(@Param("id") Long id, @Param("updatedAt") LocalDateTime updatedAt);
+
+    /**
+     * 对用户行加悲观锁（SELECT ... FOR UPDATE），用于串行化同一用户的并发写操作。
+     * 必须在事务内调用，锁持有至事务提交。
+     */
+    @Select("SELECT id FROM app_user WHERE id = #{id} FOR UPDATE")
+    Long lockById(@Param("id") Long id);
 }

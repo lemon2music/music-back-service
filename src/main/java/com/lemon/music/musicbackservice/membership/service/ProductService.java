@@ -10,6 +10,7 @@ import com.lemon.music.musicbackservice.membership.domain.ProductType;
 import com.lemon.music.musicbackservice.membership.domain.UserProductEntity;
 import com.lemon.music.musicbackservice.membership.mapper.ProductMapper;
 import com.lemon.music.musicbackservice.membership.mapper.UserProductMapper;
+import com.lemon.music.musicbackservice.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +37,7 @@ public class ProductService {
     private final UserProductMapper userProductMapper;
     private final MembershipService membershipService;
     private final ObjectMapper objectMapper;
+    private final UserMapper userMapper;
 
     /** 获取所有上架商品。 */
     public List<ProductEntity> getAvailableProducts() {
@@ -104,6 +106,9 @@ public class ProductService {
     }
 
     private void purchaseNonConsumableProduct(Long userId, ProductEntity product) {
+        // 锁定用户行（持有至事务提交），串行化同一用户的并发购买，
+        // 避免两个并发请求同时通过重复检查后各自写入。
+        userMapper.lockById(userId);
         // 非消耗性商品只能购买一次
         if (!userProductMapper.findByUserIdAndProductId(userId, product.getId()).isEmpty()) {
             throw new BusinessException("该商品只能购买一次");
