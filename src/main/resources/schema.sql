@@ -105,3 +105,22 @@ CREATE TABLE IF NOT EXISTS user_product (
     CONSTRAINT fk_user_product_user FOREIGN KEY (user_id) REFERENCES app_user(id),
     CONSTRAINT fk_user_product_product FOREIGN KEY (product_id) REFERENCES product(id)
 );
+
+-- ==================== IAP 对接 ====================
+
+-- IAP 商品映射表（统一管理消耗/非消耗/订阅）
+CREATE TABLE IF NOT EXISTS iap_product (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    internal_type VARCHAR(16) NOT NULL,
+    internal_ref_id BIGINT NULL,
+    subscription_type VARCHAR(16) NULL,
+    huawei_product_id VARCHAR(128) NOT NULL,
+    iap_product_type VARCHAR(24) NOT NULL,
+    name VARCHAR(64) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(8) NOT NULL DEFAULT 'CNY',
+    status VARCHAR(16) NOT NULL DEFAULT 'ACTIVE',
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT uk_iap_product_huawei_id UNIQUE (huawei_product_id)
+);

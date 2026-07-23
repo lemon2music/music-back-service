@@ -72,3 +72,41 @@ SELECT '终身顶级卡', 'NON_CONSUMABLE', 1999.00,
        '购买后立即成为SVIP会员，积分增长翻倍',
        'ACTIVE', NOW(), NOW()
 WHERE NOT EXISTS (SELECT 1 FROM product WHERE product_name = '终身顶级卡');
+
+-- ==================== IAP 商品映射种子 ====================
+
+INSERT INTO iap_product(internal_type, internal_ref_id, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'PRODUCT', p.id, 'iap_gem_card_001', 'CONSUMABLE', '宝石等级加速卡', 9.90, 'CNY', 'ACTIVE', NOW(), NOW()
+FROM product p
+WHERE p.product_name = '宝石等级加速卡'
+  AND NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_gem_card_001');
+
+INSERT INTO iap_product(internal_type, internal_ref_id, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'PRODUCT', p.id, 'iap_lifetime_svip_001', 'NON_CONSUMABLE', '终身顶级卡', 1999.00, 'CNY', 'ACTIVE', NOW(), NOW()
+FROM product p
+WHERE p.product_name = '终身顶级卡'
+  AND NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_lifetime_svip_001');
+
+INSERT INTO iap_product(internal_type, subscription_type, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'SUBSCRIPTION', 'MONTHLY', 'iap_sub_monthly_auto', 'AUTORENEWABLE', '月卡(连续包月)', 18.00, 'CNY', 'ACTIVE', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_sub_monthly_auto');
+
+INSERT INTO iap_product(internal_type, subscription_type, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'SUBSCRIPTION', 'QUARTERLY', 'iap_sub_quarterly_auto', 'AUTORENEWABLE', '季卡(连续包季)', 48.00, 'CNY', 'ACTIVE', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_sub_quarterly_auto');
+
+INSERT INTO iap_product(internal_type, subscription_type, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'SUBSCRIPTION', 'YEARLY', 'iap_sub_yearly_auto', 'AUTORENEWABLE', '年卡(连续包年)', 168.00, 'CNY', 'ACTIVE', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_sub_yearly_auto');
+
+INSERT INTO iap_product(internal_type, subscription_type, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'SUBSCRIPTION', 'MONTHLY', 'iap_sub_monthly_once', 'NONRENEWABLE', '月卡(一次性)', 18.00, 'CNY', 'ACTIVE', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_sub_monthly_once');
+
+INSERT INTO iap_product(internal_type, subscription_type, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'SUBSCRIPTION', 'QUARTERLY', 'iap_sub_quarterly_once', 'NONRENEWABLE', '季卡(一次性)', 48.00, 'CNY', 'ACTIVE', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_sub_quarterly_once');
+
+INSERT INTO iap_product(internal_type, subscription_type, huawei_product_id, iap_product_type, name, price, currency, status, created_at, updated_at)
+SELECT 'SUBSCRIPTION', 'YEARLY', 'iap_sub_yearly_once', 'NONRENEWABLE', '年卡(一次性)', 168.00, 'CNY', 'ACTIVE', NOW(), NOW()
+WHERE NOT EXISTS (SELECT 1 FROM iap_product ip WHERE ip.huawei_product_id = 'iap_sub_yearly_once');
