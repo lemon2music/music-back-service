@@ -37,4 +37,9 @@ public interface IapOrderMapper {
                           @Param("paidAt") LocalDateTime paidAt,
                           @Param("fulfilledAt") LocalDateTime fulfilledAt,
                           @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("UPDATE iap_order SET status = #{status}, updated_at = #{updatedAt} WHERE id = #{id}")
+    int updateStatus(@Param("id") Long id,
+                     @Param("status") OrderStatus status,
+                     @Param("updatedAt") LocalDateTime updatedAt);
 }
