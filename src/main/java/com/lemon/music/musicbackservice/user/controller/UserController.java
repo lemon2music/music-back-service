@@ -7,7 +7,6 @@ import com.lemon.music.musicbackservice.common.ApiResponse;
 import com.lemon.music.musicbackservice.user.dto.AssignRolesRequest;
 import com.lemon.music.musicbackservice.user.dto.OnlineDurationResponse;
 import com.lemon.music.musicbackservice.user.dto.RegisterRequest;
-import com.lemon.music.musicbackservice.user.dto.UpdateMembershipRequest;
 import com.lemon.music.musicbackservice.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -51,14 +50,6 @@ public class UserController {
     public ApiResponse<OnlineDurationResponse> onlineDuration(@RequestHeader(value = HttpHeaders.AUTHORIZATION, required = false) String authorization) {
         String token = extractToken(authorization);
         return ApiResponse.ok(authService.getOnlineDuration(token));
-    }
-
-    @PutMapping("/{userId}/membership")
-    @RequirePermission("USER_MANAGE_MEMBERSHIP")
-    public ApiResponse<Void> updateMembership(@PathVariable("userId") Long userId,
-                                              @Valid @RequestBody UpdateMembershipRequest request) {
-        userService.updateMembership(userId, request);
-        return ApiResponse.ok("update membership success", null);
     }
 
     @PutMapping("/{userId}/roles")

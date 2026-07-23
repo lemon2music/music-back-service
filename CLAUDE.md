@@ -52,7 +52,7 @@ user/
 
 - **DTO、值对象、枚举、配置 record 一律用 `record`。** DB 实体（`@Data` 类）是例外。所有依赖均通过 Lombok `@RequiredArgsConstructor` 构造器注入。
 - 每个 controller 方法都返回 `common/ApiResponse<T>`——即 `{success, message, data}` 信封。使用 `ApiResponse.ok(...)` / `ApiResponse.fail(...)` 工厂方法。
-- **坑——mapper 扫描固定在 user 模块。** `@MapperScan("...user.mapper")` 在 `MusicBackServiceApplication` 与 `config/MyBatisConfig` **两处**都声明了（冗余）。其他包下的 mapper 默认不会被扫描，除非在两处都加上对应包。（单独标注了 `@Mapper` 的接口也会被扫描，但显式的 `@MapperScan` 才是可靠路径。）
+- **坑——mapper 扫描需在两处同步声明。** `@MapperScan` 在 `MusicBackServiceApplication` 与 `config/MyBatisConfig` **两处**都声明了（冗余），当前扫描 `user.mapper` 与 `membership.mapper` 两个包。新增领域的 mapper 必须在两处都加上对应包。（单独标注了 `@Mapper` 的接口也会被扫描，但显式的 `@MapperScan` 才是可靠路径。）
 - MyBatis 开启了 `map-underscore-to-camel-case: true`，所以 DB 的 `snake_case` 列会自动映射到 camelCase 字段。
 
 ### 错误处理
@@ -62,6 +62,18 @@ user/
 ### 持久化初始化每次启动都执行
 
 `spring.sql.init.mode: always` 使得 `schema.sql`（`CREATE TABLE IF NOT EXISTS`）和 `data.sql` 在**每次**启动时都执行，dev 和 test 皆是如此。请保持它们幂等。
+
+### 会员系统（`membership` 模块）
+
+参照 `user` 模块的分层结构，是一个独立领域模块（domain/dto/mapper/service/controller）。已取代旧的 `MembershipLevel`（NORMAL/GOLD/DIAMOND）简单等级。
+
+- **等级与积分**：`VipLevel` VIP1-VIP5（按积分区间 1-1000 / 1001-3000 / 3001-10000 / 10001-49999 / 50000+），`MembershipType` 分 `VIP`/`SVIP`（SVIP 每日积分翻倍）。等级随积分自动升降（`MembershipService.calculateLevelByPoints`）。
+- **定时任务**：`MembershipScheduler` 每天凌晨 1 点（`@EnableScheduling` 已在主类开启）跑 `MembershipService.processDailyPointsChange()`——有会员资格按等级增长积分，失去资格则反向扣减（积分不为负）。每用户独立事务（用 `TransactionTemplate`），单用户失败不影响他人。
+- **会员资格**：购买订阅（`SubscriptionType`：月/季/年卡）获得，到期后 `has_membership` 置 false 并开始反向扣减。
+- **商品系统**：`product.effect_config`（JSON 字符串）驱动效果——`POINTS_BONUS`（加积分）/ `MEMBERSHIP_UPGRADE`（升级 SVIP）。消耗性商品（宝石等级加速卡）购买后入库待用；非消耗性商品（终身顶级卡）购买即生效且只能买一次，用 `UserMapper.lockById`（`SELECT ... FOR UPDATE`）行锁串行化同一用户的并发购买。
+- **鉴权**：查询接口（`/api/membership/info`、`/points-history`、`/products`）需登录但无需特定权限；写接口需 `MEMBERSHIP_PURCHASE`/`PRODUCT_PURCHASE`/`PRODUCT_USE` 权限。
+- **枚举按名称存储**：MyBatis 默认 `EnumTypeHandler`，`membership_type`/`vip_level` 等列存 `'VIP'`、`'VIP1'` 字符串，与 `UserStatus` 一致。
+- **遗留列**：`app_user.membership_level`（旧系统，`NOT NULL`）仍在表里，`UserMapper.insert` 写固定值 `'NORMAL'`，代码已不引用；可日后手动 `ALTER TABLE app_user DROP COLUMN membership_level` 清理。
 
 ## 配置 profile
 

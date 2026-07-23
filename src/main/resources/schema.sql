@@ -37,3 +37,71 @@ CREATE TABLE IF NOT EXISTS role_permission (
     CONSTRAINT fk_role_permission_role FOREIGN KEY (role_id) REFERENCES app_role(id),
     CONSTRAINT fk_role_permission_permission FOREIGN KEY (permission_id) REFERENCES app_permission(id)
 );
+
+-- ==================== 会员系统 ====================
+
+-- 会员信息表（每个用户一条）
+CREATE TABLE IF NOT EXISTS membership (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL UNIQUE,
+    current_points INT NOT NULL DEFAULT 0,
+    membership_type VARCHAR(16) NOT NULL,
+    vip_level VARCHAR(8) NOT NULL,
+    has_membership BOOLEAN NOT NULL DEFAULT FALSE,
+    subscription_expire_at DATETIME NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT fk_membership_user FOREIGN KEY (user_id) REFERENCES app_user(id)
+);
+
+-- 积分变化历史表
+CREATE TABLE IF NOT EXISTS membership_points_history (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    points_change INT NOT NULL,
+    points_before INT NOT NULL,
+    points_after INT NOT NULL,
+    change_reason VARCHAR(32) NOT NULL,
+    description VARCHAR(255) NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_points_history_user_created (user_id, created_at),
+    CONSTRAINT fk_points_history_user FOREIGN KEY (user_id) REFERENCES app_user(id)
+);
+
+-- 会员订阅记录表
+CREATE TABLE IF NOT EXISTS membership_subscription (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    subscription_type VARCHAR(16) NOT NULL,
+    start_time DATETIME NOT NULL,
+    expire_time DATETIME NOT NULL,
+    created_at DATETIME NOT NULL,
+    INDEX idx_subscription_user_start (user_id, start_time),
+    CONSTRAINT fk_subscription_user FOREIGN KEY (user_id) REFERENCES app_user(id)
+);
+
+-- 商品表
+CREATE TABLE IF NOT EXISTS product (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    product_name VARCHAR(64) NOT NULL,
+    product_type VARCHAR(16) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    effect_config TEXT NOT NULL,
+    description VARCHAR(255) NULL,
+    status VARCHAR(16) NOT NULL,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+
+-- 用户购买/持有商品记录表
+CREATE TABLE IF NOT EXISTS user_product (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    user_id BIGINT NOT NULL,
+    product_id BIGINT NOT NULL,
+    purchase_time DATETIME NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
+    used_time DATETIME NULL,
+    INDEX idx_user_product_user_purchase (user_id, purchase_time),
+    CONSTRAINT fk_user_product_user FOREIGN KEY (user_id) REFERENCES app_user(id),
+    CONSTRAINT fk_user_product_product FOREIGN KEY (product_id) REFERENCES product(id)
+);

@@ -1,13 +1,12 @@
 package com.lemon.music.musicbackservice.user.service;
 
 import com.lemon.music.musicbackservice.common.BusinessException;
-import com.lemon.music.musicbackservice.user.domain.MembershipLevel;
+import com.lemon.music.musicbackservice.membership.service.MembershipService;
 import com.lemon.music.musicbackservice.user.domain.RoleEntity;
 import com.lemon.music.musicbackservice.user.domain.UserEntity;
 import com.lemon.music.musicbackservice.user.domain.UserStatus;
 import com.lemon.music.musicbackservice.user.dto.AssignRolesRequest;
 import com.lemon.music.musicbackservice.user.dto.RegisterRequest;
-import com.lemon.music.musicbackservice.user.dto.UpdateMembershipRequest;
 import com.lemon.music.musicbackservice.user.mapper.RoleMapper;
 import com.lemon.music.musicbackservice.user.mapper.UserMapper;
 import com.lemon.music.musicbackservice.user.mapper.UserRoleMapper;
@@ -29,6 +28,7 @@ public class UserService {
     private final RoleMapper roleMapper;
     private final UserRoleMapper userRoleMapper;
     private final PasswordEncoder passwordEncoder;
+    private final MembershipService membershipService;
 
     @Transactional
     public Long register(RegisterRequest request) {
@@ -48,7 +48,6 @@ public class UserService {
         UserEntity entity = new UserEntity();
         entity.setUsername(request.username());
         entity.setPasswordHash(passwordEncoder.encode(request.password()));
-        entity.setMembershipLevel(MembershipLevel.NORMAL);
         entity.setStatus(UserStatus.ACTIVE);
         entity.setPhone(request.phone());
         entity.setCreatedAt(now);
@@ -61,22 +60,17 @@ public class UserService {
         }
         userRoleMapper.insert(entity.getId(), defaultRole.getId());
 
+        // 初始化新用户会员信息（VIP1、0 积分、无会员资格）
+        membershipService.initializeMembership(entity.getId());
+
         return entity.getId();
     }
 
     @Transactional
     public void cancelUser(Long userId) {
-        UserEntity user = requireActiveUser(userId);
+        requireActiveUser(userId);
         if (userMapper.deactivateById(userId, LocalDateTime.now()) <= 0) {
             throw new BusinessException("cancel user failed");
-        }
-    }
-
-    @Transactional
-    public void updateMembership(Long userId, UpdateMembershipRequest request) {
-        requireActiveUser(userId);
-        if (userMapper.updateMembership(userId, request.membershipLevel(), LocalDateTime.now()) <= 0) {
-            throw new BusinessException("update membership failed");
         }
     }
 
