@@ -144,3 +144,19 @@ CREATE TABLE IF NOT EXISTS iap_order (
     CONSTRAINT uk_iap_order_no UNIQUE (order_no),
     INDEX idx_iap_order_user (user_id, created_at)
 );
+
+-- 权益发放记录表（防重复发货/重复回收）
+CREATE TABLE IF NOT EXISTS iap_fulfillment (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    huawei_purchase_order_id VARCHAR(64) NOT NULL,
+    huawei_purchase_token VARCHAR(512) NULL,
+    iap_order_id BIGINT NULL,
+    user_id BIGINT NOT NULL,
+    iap_product_id BIGINT NOT NULL,
+    iap_product_type VARCHAR(24) NOT NULL,
+    action VARCHAR(16) NOT NULL,
+    points_granted INT NOT NULL DEFAULT 0,
+    effect_snapshot TEXT NULL,
+    created_at DATETIME NOT NULL,
+    CONSTRAINT uk_iap_fulfillment_po_action UNIQUE (huawei_purchase_order_id, action)
+);
