@@ -124,3 +124,23 @@ CREATE TABLE IF NOT EXISTS iap_product (
     updated_at DATETIME NOT NULL,
     CONSTRAINT uk_iap_product_huawei_id UNIQUE (huawei_product_id)
 );
+
+-- 业务订单表（预下单落库）
+CREATE TABLE IF NOT EXISTS iap_order (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    order_no VARCHAR(64) NOT NULL,
+    user_id BIGINT NOT NULL,
+    iap_product_id BIGINT NOT NULL,
+    huawei_product_id VARCHAR(128) NOT NULL,
+    amount DECIMAL(10,2) NOT NULL,
+    currency VARCHAR(8) NOT NULL DEFAULT 'CNY',
+    status VARCHAR(16) NOT NULL,
+    huawei_purchase_order_id VARCHAR(64) NULL,
+    huawei_purchase_token VARCHAR(512) NULL,
+    created_at DATETIME NOT NULL,
+    paid_at DATETIME NULL,
+    fulfilled_at DATETIME NULL,
+    updated_at DATETIME NOT NULL,
+    CONSTRAINT uk_iap_order_no UNIQUE (order_no),
+    INDEX idx_iap_order_user (user_id, created_at)
+);
