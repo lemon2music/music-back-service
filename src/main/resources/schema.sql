@@ -160,3 +160,20 @@ CREATE TABLE IF NOT EXISTS iap_fulfillment (
     created_at DATETIME NOT NULL,
     CONSTRAINT uk_iap_fulfillment_po_action UNIQUE (huawei_purchase_order_id, action)
 );
+
+-- 通知日志表（排查 + 按 notificationRequestId 幂等）
+CREATE TABLE IF NOT EXISTS iap_notification_log (
+    id BIGINT PRIMARY KEY AUTO_INCREMENT,
+    notification_request_id VARCHAR(128) NOT NULL,
+    notification_type VARCHAR(48) NOT NULL,
+    notification_subtype VARCHAR(64) NULL,
+    huawei_purchase_order_id VARCHAR(64) NULL,
+    huawei_purchase_token VARCHAR(512) NULL,
+    huawei_product_id VARCHAR(128) NULL,
+    user_id BIGINT NULL,
+    raw_jws TEXT NULL,
+    status VARCHAR(16) NOT NULL,
+    error_message VARCHAR(512) NULL,
+    created_at DATETIME NOT NULL,
+    CONSTRAINT uk_iap_notification_req UNIQUE (notification_request_id)
+);
