@@ -55,7 +55,6 @@ class MusicBackServiceApplicationTests {
         assertThat(user.getId()).isNotNull();
         assertThat(user.getUsername()).isEqualTo("charlie");
         assertThat(user.getPasswordHash()).isNotNull(); // password_hash -> passwordHash
-        assertThat(user.getMembershipLevel()).isNotNull(); // membership_level -> membershipLevel
         assertThat(user.getStatus()).isNotNull(); // status -> status
         assertThat(user.getPhone()).isEqualTo("13900139000"); // phone -> phone
         assertThat(user.getCreatedAt()).isNotNull(); // created_at -> createdAt

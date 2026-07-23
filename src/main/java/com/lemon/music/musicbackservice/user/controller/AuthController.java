@@ -45,7 +45,7 @@ public class AuthController {
     public ApiResponse<SimpleUserResponse> me() {
         var session = AuthContext.get();
         UserEntity user = userService.requireActiveUser(session.userId());
-        return ApiResponse.ok(new SimpleUserResponse(session.userId(), session.username(), user.getMembershipLevel(), user.getPhone()));
+        return ApiResponse.ok(new SimpleUserResponse(session.userId(), session.username(), user.getPhone()));
     }
 
     private String extractToken(String authorization) {
