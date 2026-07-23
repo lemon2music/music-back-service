@@ -13,5 +13,7 @@ public enum PointsChangeReason {
     /** 订阅购买 */
     SUBSCRIPTION_PURCHASE,
     /** 订阅到期 */
-    SUBSCRIPTION_EXPIRE
+    SUBSCRIPTION_EXPIRE,
+    /** IAP 退款回收 */
+    IAP_REVOKE
 }

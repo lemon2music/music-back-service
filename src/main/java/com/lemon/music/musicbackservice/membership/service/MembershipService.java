@@ -170,6 +170,46 @@ public class MembershipService {
     }
 
     /**
+     * 扣减积分（IAP 退款回收等）。积分不为负，不足扣到 0。
+     * 变化记录到积分历史。
+     */
+    public void deductPoints(Long userId, int points, PointsChangeReason reason, String description) {
+        if (points <= 0) {
+            return;
+        }
+        transactionTemplate.executeWithoutResult(status -> {
+            MembershipEntity membership = membershipMapper.findByUserId(userId);
+            if (membership == null) {
+                throw new BusinessException("用户会员信息不存在");
+            }
+            int oldPoints = membership.getCurrentPoints();
+            int newPoints = Math.max(0, oldPoints - points);
+            int actualChange = newPoints - oldPoints; // 负数或 0
+            applyPointsChange(membership, oldPoints, newPoints, actualChange, reason, description);
+        });
+    }
+
+    /** 降级会员类型（如 IAP 退款：SVIP → VIP）。已为目标类型时忽略。 */
+    public void downgradeMembershipType(Long userId, MembershipType newType) {
+        MembershipEntity membership = getMembershipByUserId(userId);
+        if (membership.getMembershipType() == newType) {
+            return;
+        }
+        membership.setMembershipType(newType);
+        membership.setUpdatedAt(LocalDateTime.now());
+        membershipMapper.update(membership);
+    }
+
+    /** 撤销订阅资格（IAP 退款/订阅过期）：置 has_membership=false 并清到期时间。 */
+    public void revokeSubscription(Long userId) {
+        MembershipEntity membership = getMembershipByUserId(userId);
+        membership.setHasMembership(false);
+        membership.setSubscriptionExpireAt(null);
+        membership.setUpdatedAt(LocalDateTime.now());
+        membershipMapper.update(membership);
+    }
+
+    /**
      * 每日积分处理（定时任务调用）：
      * <ul>
      *   <li>订阅到期 → 取消会员资格</li>
