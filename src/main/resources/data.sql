@@ -38,37 +38,18 @@ WHERE r.role_code = 'ADMIN'
       WHERE rp.role_id = r.id AND rp.permission_id = p.id
   );
 
--- ==================== 会员系统权限 ====================
+-- ==================== IAP 购买权限 ====================
 
 INSERT INTO app_permission(permission_code, description)
-SELECT 'MEMBERSHIP_PURCHASE', '购买会员订阅'
-WHERE NOT EXISTS (SELECT 1 FROM app_permission WHERE permission_code = 'MEMBERSHIP_PURCHASE');
+SELECT 'IAP_PURCHASE', 'IAP 商品购买（预下单/上报）'
+WHERE NOT EXISTS (SELECT 1 FROM app_permission WHERE permission_code = 'IAP_PURCHASE');
 
-INSERT INTO app_permission(permission_code, description)
-SELECT 'PRODUCT_PURCHASE', '购买商品'
-WHERE NOT EXISTS (SELECT 1 FROM app_permission WHERE permission_code = 'PRODUCT_PURCHASE');
-
-INSERT INTO app_permission(permission_code, description)
-SELECT 'PRODUCT_USE', '使用商品'
-WHERE NOT EXISTS (SELECT 1 FROM app_permission WHERE permission_code = 'PRODUCT_USE');
-
--- 普通用户可购买订阅、商品并使用商品
+-- 普通用户与管理员均可发起 IAP 购买
 INSERT INTO role_permission(role_id, permission_id)
 SELECT r.id, p.id
 FROM app_role r
-JOIN app_permission p ON p.permission_code IN ('MEMBERSHIP_PURCHASE', 'PRODUCT_PURCHASE', 'PRODUCT_USE')
-WHERE r.role_code = 'USER'
-  AND NOT EXISTS (
-      SELECT 1 FROM role_permission rp
-      WHERE rp.role_id = r.id AND rp.permission_id = p.id
-  );
-
--- 管理员同样拥有会员相关权限
-INSERT INTO role_permission(role_id, permission_id)
-SELECT r.id, p.id
-FROM app_role r
-JOIN app_permission p ON p.permission_code IN ('MEMBERSHIP_PURCHASE', 'PRODUCT_PURCHASE', 'PRODUCT_USE')
-WHERE r.role_code = 'ADMIN'
+JOIN app_permission p ON p.permission_code = 'IAP_PURCHASE'
+WHERE r.role_code IN ('USER', 'ADMIN')
   AND NOT EXISTS (
       SELECT 1 FROM role_permission rp
       WHERE rp.role_id = r.id AND rp.permission_id = p.id
