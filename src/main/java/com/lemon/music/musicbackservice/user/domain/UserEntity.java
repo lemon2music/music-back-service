@@ -10,7 +10,6 @@ public class UserEntity {
     private Long id;
     private String username;
     private String passwordHash;
-    private MembershipLevel membershipLevel;
     private UserStatus status;
     private String phone;
     private LocalDateTime createdAt;

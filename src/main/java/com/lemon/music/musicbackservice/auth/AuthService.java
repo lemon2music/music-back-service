@@ -61,7 +61,7 @@ public class AuthService {
         stringRedisTemplate.opsForSet().add(userTokenSetKey, token);
         stringRedisTemplate.expire(userTokenSetKey, ttl);
 
-        return new LoginResponse(token, user.getId(), user.getUsername(), user.getMembershipLevel(), permissionCodes);
+        return new LoginResponse(token, user.getId(), user.getUsername(), permissionCodes);
     }
 
     public void logout(String token) {

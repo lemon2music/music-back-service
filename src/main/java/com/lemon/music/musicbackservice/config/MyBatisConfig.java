@@ -10,7 +10,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.lemon.music.musicbackservice.user.mapper")
+@MapperScan({"com.lemon.music.musicbackservice.user.mapper",
+             "com.lemon.music.musicbackservice.membership.mapper",
+             "com.lemon.music.musicbackservice.iap.mapper"})
 public class MyBatisConfig {
 
     @Bean

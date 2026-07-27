@@ -19,6 +19,19 @@ mybatis:
   configuration:
     map-underscore-to-camel-case: true
 
+logging:
+  charset:
+    console: UTF-8
+    file: UTF-8
+
 app:
   auth:
     token-expire-hours: 168
+  iap:
+    base-url: https://iap.cloud.huawei.com
+    root-ca-cert-path: ${user.dir}/config/iap/RootCaG2Ecdsa.cer
+    jwt:
+      private-key-path: ${user.dir}/config/iap/priKey.p8
+      key-id: ${IAP_KEY_ID:}
+      issuer-id: ${IAP_ISSUER_ID:}
+      app-id: ${IAP_APP_ID:}
