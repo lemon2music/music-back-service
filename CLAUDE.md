@@ -75,6 +75,47 @@ user/
 - **枚举按名称存储**：MyBatis 默认 `EnumTypeHandler`，`membership_type`/`vip_level` 等列存 `'VIP'`、`'VIP1'` 字符串，与 `UserStatus` 一致。
 - **遗留列**：`app_user.membership_level`（旧系统，`NOT NULL`）仍在表里，`UserMapper.insert` 写固定值 `'NORMAL'`，代码已不引用；可日后手动 `ALTER TABLE app_user DROP COLUMN membership_level` 清理。
 
+### IAP订单系统（`iap` 模块）
+
+HarmonyOS应用内购买系统，参照 `user` 模块的分层结构。支持消费型商品和订阅型商品的购买、验签、发货和取消。
+
+- **核心功能**：
+  - 预下单（`POST /api/iap/orders`）：生成订单号供客户端调用华为IAP收银台
+  - 购买上报（`POST /api/iap/orders/report`）：客户端支付成功后上报purchaseData，服务端验签后发放权益
+  - 订单取消（`PUT /api/iap/orders/{orderNo}/cancel`）：用户取消支付时更新订单状态为CLOSED
+  - 订单查询（`GET /api/iap/products`）：查询上架的IAP商品列表
+  - 订单通知（`POST /api/iap/notifications`）：接收华为IAP服务端的订阅状态变更通知
+
+- **订单状态流转**：`PENDING`（预下单）→ `PAID`（支付成功）→ `FULFILLED`（已发货）/ `REFUNDED`（已退款）/ `CLOSED`（已取消）
+
+- **取消订单功能**：
+  - 端点：`PUT /api/iap/orders/{orderNo}/cancel`
+  - 鉴权：需登录（`USER_SELF`权限）
+  - 权限验证：只有订单所有者可以取消，且只能取消PENDING状态的订单
+  - 请求体（可选）：`{ "cancelReason": "用户主动取消" }`
+  - 响应：`{ "success": true, "message": "订单已取消", "data": true }`
+  - 数据库变更：更新订单状态为CLOSED，记录cancelled_at和cancel_reason
+
+- **数据库设计**：
+  - `iap_order`：订单主表（order_no, user_id, iap_product_id, status, cancelled_at, cancel_reason）
+  - `iap_product`：商品配置表（huawei_product_id, internal_product_type, price）
+  - `iap_fulfillment`：发货记录表（order_no, purchase_token, notification_id）
+  - `iap_notification_log`：通知日志表（notification_type, jws_notification）
+
+- **安全性设计**：
+  - JWT验签：使用华为公钥验证purchaseData签名
+  - 幂等性保证：订单状态条件更新，防止重复发货
+  - 权限验证：订单所有权校验，状态机严格控制
+  - 订阅通知：华为服务端推送，需验证notificationSignature
+
+- **枚举按名称存储**：`OrderStatus`、`IapProductType`、`IapNotificationType` 等枚举存储为字符串（'PENDING', 'PAID', 'FULFILLED'）
+
+- **华为IAP集成**：
+  - 预下单时order_no作为developerPayload传递给华为收银台
+  - 购买上报时解析purchaseData获取订单信息进行验签
+  - 支持消费型商品（CONSUMABLE）和订阅型商品（SUBSCRIPTION）
+  - 订阅类型支持自动续订（AUTO_RENEWABLE）
+
 ## 配置 profile
 
 - **主配置（`application.yaml`）** 指向远程 dev 环境的 MySQL 与 Redis（`47.119.121.254`），且凭据已提交进仓库（`admin`/`Test@123456`）。请注意这些是已入库的真实 dev 环境密钥。
