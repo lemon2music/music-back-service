@@ -3,6 +3,9 @@ package com.lemon.music.musicbackservice.iap.controller;
 import com.lemon.music.musicbackservice.auth.AuthContext;
 import com.lemon.music.musicbackservice.auth.RequirePermission;
 import com.lemon.music.musicbackservice.common.ApiResponse;
+import com.lemon.music.musicbackservice.common.BusinessException;
+import com.lemon.music.musicbackservice.iap.domain.IapOrderEntity;
+import com.lemon.music.musicbackservice.iap.dto.request.CancelOrderRequest;
 import com.lemon.music.musicbackservice.iap.dto.request.CreateOrderRequest;
 import com.lemon.music.musicbackservice.iap.dto.request.ReportPurchaseRequest;
 import com.lemon.music.musicbackservice.iap.dto.response.IapProductResponse;
@@ -14,7 +17,9 @@ import com.lemon.music.musicbackservice.iap.service.IapProductService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -50,5 +55,25 @@ public class IapController {
     public ApiResponse<ReportPurchaseResponse> reportPurchase(@Valid @RequestBody ReportPurchaseRequest request) {
         Long userId = AuthContext.get().userId();
         return ApiResponse.ok(iapFulfillmentService.handleReport(userId, request.iapProductType(), request.purchaseData()));
+    }
+
+    /** 取消待支付订单（登录，仅订单本人可取消）。 */
+    @PutMapping("/orders/{orderNo}/cancel")
+    @RequirePermission("USER_SELF")
+    public ApiResponse<Boolean> cancelOrder(@PathVariable("orderNo") String orderNo,
+                                            @RequestBody(required = false) CancelOrderRequest request) {
+        Long userId = AuthContext.get().userId();
+        String reason = request != null ? request.cancelReason() : null;
+
+        try {
+            IapOrderEntity order = iapOrderService.findByOrderNo(orderNo);
+            if (!order.getUserId().equals(userId)) {
+                return ApiResponse.fail("无权限操作此订单");
+            }
+            boolean cancelled = iapOrderService.cancelOrder(orderNo, reason);
+            return ApiResponse.ok("订单已取消", cancelled);
+        } catch (BusinessException e) {
+            return ApiResponse.fail(e.getMessage());
+        }
     }
 }
