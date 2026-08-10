@@ -140,6 +140,8 @@ CREATE TABLE IF NOT EXISTS iap_order (
     created_at DATETIME NOT NULL,
     paid_at DATETIME NULL,
     fulfilled_at DATETIME NULL,
+    cancelled_at DATETIME NULL,
+    cancel_reason VARCHAR(255) NULL,
     updated_at DATETIME NOT NULL,
     CONSTRAINT uk_iap_order_no UNIQUE (order_no),
     INDEX idx_iap_order_user (user_id, created_at)
@@ -177,3 +179,13 @@ CREATE TABLE IF NOT EXISTS iap_notification_log (
     created_at DATETIME NOT NULL,
     CONSTRAINT uk_iap_notification_req UNIQUE (notification_request_id)
 );
+
+-- ==================== IAP 订单取消功能迁移 ====================
+-- 为已存在的旧数据库（iap_order 表无以下两列）补充 cancelled_at / cancel_reason。
+--
+-- 幂等性说明：
+-- - 新建库：CREATE TABLE IF NOT EXISTS iap_order 已包含这两列；ALTER ... ADD COLUMN IF NOT EXISTS 检测到列已存在会跳过，不报错。
+-- - 旧库：CREATE TABLE IF NOT EXISTS 命中已存在的表（no-op），由以下 ALTER 补列；再次启动时 IF NOT EXISTS 仍为 no-op。
+-- - 由于 spring.sql.init.mode: always 每次启动都执行此文件，必须保证语句幂等，因此使用 IF NOT EXISTS（不依赖 continue-on-error 容错）。
+ALTER TABLE iap_order ADD COLUMN IF NOT EXISTS cancelled_at DATETIME NULL;
+ALTER TABLE iap_order ADD COLUMN IF NOT EXISTS cancel_reason VARCHAR(255) NULL;
