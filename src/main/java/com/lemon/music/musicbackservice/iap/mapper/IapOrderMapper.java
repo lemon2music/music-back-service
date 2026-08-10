@@ -22,7 +22,8 @@ public interface IapOrderMapper {
     int insert(IapOrderEntity entity);
 
     @Select("SELECT id, order_no, user_id, iap_product_id, huawei_product_id, amount, currency, status, "
-            + "huawei_purchase_order_id, huawei_purchase_token, created_at, paid_at, fulfilled_at, updated_at "
+            + "huawei_purchase_order_id, huawei_purchase_token, created_at, paid_at, fulfilled_at, updated_at, "
+            + "cancelled_at, cancel_reason "
             + "FROM iap_order WHERE order_no = #{orderNo}")
     IapOrderEntity findByOrderNo(@Param("orderNo") String orderNo);
 
@@ -42,4 +43,13 @@ public interface IapOrderMapper {
     int updateStatus(@Param("id") Long id,
                      @Param("status") OrderStatus status,
                      @Param("updatedAt") LocalDateTime updatedAt);
+
+    @Update("UPDATE iap_order SET status = #{status}, cancelled_at = #{cancelledAt}, "
+            + "cancel_reason = #{cancelReason}, updated_at = #{updatedAt} "
+            + "WHERE order_no = #{orderNo} AND status = 'PENDING'")
+    int cancelOrder(@Param("orderNo") String orderNo,
+                    @Param("status") OrderStatus status,
+                    @Param("cancelledAt") LocalDateTime cancelledAt,
+                    @Param("cancelReason") String cancelReason,
+                    @Param("updatedAt") LocalDateTime updatedAt);
 }
