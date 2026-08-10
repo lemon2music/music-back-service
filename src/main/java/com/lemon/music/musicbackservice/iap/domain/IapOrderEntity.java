@@ -20,5 +20,7 @@ public class IapOrderEntity {
     private LocalDateTime createdAt;
     private LocalDateTime paidAt;
     private LocalDateTime fulfilledAt;
+    private LocalDateTime cancelledAt;
+    private String cancelReason;
     private LocalDateTime updatedAt;
 }
