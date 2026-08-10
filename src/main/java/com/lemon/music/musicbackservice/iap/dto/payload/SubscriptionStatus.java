@@ -1,5 +1,7 @@
 package com.lemon.music.musicbackservice.iap.dto.payload;
 
+import java.util.List;
+
 public record SubscriptionStatus(
         String subGroupGenerationId,
         String subscriptionId,
@@ -7,5 +9,6 @@ public record SubscriptionStatus(
         String status,
         Long expiresTime,
         PurchaseOrderPayload lastPurchaseOrder,
-        SubRenewalInfo renewalInfo
+        SubRenewalInfo renewalInfo,
+        List<PurchaseOrderPayload> recentPurchaseOrderList
 ) {}

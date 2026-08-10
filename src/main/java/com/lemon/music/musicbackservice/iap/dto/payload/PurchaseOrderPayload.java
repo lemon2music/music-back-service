@@ -18,6 +18,9 @@ public record PurchaseOrderPayload(
         String developerPayload,
         String purchaseOrderRevocationReasonCode,
         String offerId,
+        String duration,
+        String durationTypeCode,
+        String subGroupId,
         String subscriptionId,
         String subGroupGenerationId
 ) {}

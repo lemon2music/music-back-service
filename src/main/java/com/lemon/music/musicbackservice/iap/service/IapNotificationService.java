@@ -126,7 +126,7 @@ public class IapNotificationService {
         } catch (BusinessException e) {
             throw e;
         } catch (Exception e) {
-            throw new BusinessException("查询/验签订单状态失败");
+            throw new BusinessException("查询/验签订单状态失败:" + e.getMessage());
         }
     }
 
